@@ -1,0 +1,14 @@
+[
+  {
+    "title": "Frontend Engineer",
+    "company": "Acme Corp",
+    "description": "Build React/Next.js UI, collaborate with design, optimize performance.",
+    "tags": ["react", "next.js", "javascript", "css", "html"]
+  },
+  {
+    "title": "Backend Engineer (Node)",
+    "company": "DataLift",
+    "description": "Design APIs with Node/Express, MongoDB data modeling, cloud deploy.",
+    "tags": ["node", "express", "mongodb", "docker", "aws"]
+  }
+]

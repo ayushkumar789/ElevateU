@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "ElevateU",
+    "slug": "elevateu",
+    "scheme": "elevateu",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "sdkVersion": "51.0.0"
+  }
+}

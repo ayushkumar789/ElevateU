@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme tokens */
+:root {
+    --bg1: 255, 255, 255;
+    --bg2: 240, 248, 255; /* light bluish */
+    --glow: 59,130,246;
+}
+:root.dark {
+    --bg1: 0, 0, 0;
+    --bg2: 24, 24, 27; /* zinc-900 */
+    --glow: 99,102,241;
+}
+
+/* Real background uses vars so it flips with theme */
+body {
+    background:
+            radial-gradient(ellipse at top, rgba(var(--glow), .18), transparent 60%),
+            radial-gradient(ellipse at bottom, rgba(147,51,234,.16), transparent 60%),
+            linear-gradient(180deg, rgb(var(--bg1)) 0%, rgb(var(--bg2)) 100%);
+    min-height: 100vh;
+}
+
+.card { @apply rounded-2xl shadow-md hover:shadow-[0_0_40px_rgba(99,102,241,0.35)] transition p-6 bg-white/70 dark:bg-zinc-900/70 backdrop-blur; }
+.btn  { @apply px-4 py-2 rounded-xl font-semibold transition; }
+.btn-primary { @apply bg-indigo-600 text-white hover:opacity-90 shadow-[0_0_20px_rgba(59,130,246,0.35)]; }
+.input { @apply w-full px-4 py-2 rounded-xl bg-white/80 dark:bg-zinc-800/80 border dark:border-zinc-700; }
+.link { @apply text-indigo-600 hover:underline; }

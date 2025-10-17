@@ -1,0 +1,27 @@
+{
+    "greenhouse": [
+    "openai","datadog","doordash","stripe","hubspot","notion","airbnb","cloudflare","snowflake","figma",
+    "segment","asana","discord","coursera","duolingo","atlassian","confluent","zapier","palantir","fastly",
+    "mongodb","databricks","reddit","brex","benchling","ramp","rippling","scaleai","rubrik","deepmind",
+    "skydio","loom","linearapp","dropbox","box","okta","pagerduty","samsara","squarespace","twilio","unity",
+    "mondaycom","mailerLite","intercom","webflow","stripepress","a16zcrypto","astronomer","grailbio",
+    "cloverhealth","stripeatlas","blend","chime","affirm","asana","opendoor","robinhood","discord",
+    "remitly","nextdoor","stripe","roku","eventbrite","deliveroo","klarna","transferwise","wise",
+    "zscaler","vanta","hashicorp","datadog","asana","elastic","databricks","figma","mural","cloudflare",
+    "wix","harness","grafana","sentry","notion","linear","snyk","vercel","github","gitlab","quantco"
+],
+    "lever": [
+    "shopify","robinhood","affirm","sonatype","plaid","postman","idme","niantic","reddit","wework","zynga",
+    "grammarly","circle","gusto","anduril","klarna","flixbus","segment","optimizely","asana","mixpanel",
+    "getaround","airtable","everlane","patreon","quip","xero","envoy","launchdarkly","planet","loom",
+    "godaddy","digitalocean","wealthsimple","vercel","betterup","dapperlabs","sentry","sourcegraph"
+],
+    "ashby": [
+    "anthropic","perplexity","retool","runway","figma","webflow","linear","calm","scaleai","dune","cohere",
+    "superhuman","hex","notion","ramp","brex","retool","gemini","zip","ziphq","deepgram","stabilityai",
+    "exafunction","prefect","octoai","xata","hashicorp","compound","substack","openbb"
+],
+    "workable": [
+    "hotjar","typeform","invision","duckduckgo","prusa3d","automattic","buffer","deliveroo","prezi","curemd"
+]
+}

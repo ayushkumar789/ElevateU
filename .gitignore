@@ -1,0 +1,21 @@
+# Node/Next
+node_modules/
+npm-debug.log*
+.yarn/*
+.pnp.*
+.next/
+out/
+dist/
+build/
+coverage/
+
+# Env & secrets
+*.env
+*.env.*
+!.env.example
+
+# OS/editor cruft
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
