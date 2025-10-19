@@ -12,7 +12,10 @@ import resumeRouter from "./routes/resume.js";
 import interviewRouter from "./routes/interview.js";
 import jobsRouter from "./routes/jobs.js";
 import gamifyRouter from "./routes/gamify.js";
-
+import eventsRoute from "./routes/events.js";
+import searchRouter from "./routes/search.js";
+import { requireAuth } from "./middleware/auth.js";
+import resumeGenRoute from "./routes/resume_gen.js";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -32,6 +35,9 @@ app.use("/api/resume", resumeRouter);
 app.use("/api/interview", interviewRouter);
 app.use("/api/jobs", jobsRouter);
 app.use("/api/gamify", gamifyRouter);
+app.use("/api/events", eventsRoute);
+app.use("/api/search", requireAuth, searchRouter);
+app.use("/api/resume", resumeGenRoute);
 
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/elevateu";
 mongoose.connect(MONGODB_URI).then(() => {

@@ -1,5 +1,5 @@
-// Feature extraction + single scoring function used by both register and resume.
-// If an ML model is present (./models/resume_model.json), we’ll use it; else heuristic.
+// server/src/utils/scorer.js
+// Extracts features from resume text and computes a heuristic or model-based score.
 
 import fs from "fs";
 import path from "path";
@@ -11,10 +11,10 @@ let mlModel = null; // { weights: {intercept, coverage, sections, bullets, metri
 const modelPath = path.join(__dirname, "models", "resume_model.json");
 if (fs.existsSync(modelPath)) {
     try {
-        mlModel = JSON.parse(fs.readFileSync(modelPath, "utf8"));
-        // basic sanity
+        const raw = fs.readFileSync(modelPath, "utf8");
+        mlModel = JSON.parse(raw);
         ["intercept", "coverage", "sections", "bullets", "metrics"].forEach(k => {
-            if (typeof mlModel.weights?.[k] !== "number") throw new Error("bad weights");
+            if (typeof mlModel?.weights?.[k] !== "number") throw new Error("bad weights");
         });
     } catch {
         mlModel = null;
@@ -28,49 +28,19 @@ export function extractResumeFeatures(resumeText = "", jobDescription = "") {
 
     const keywords = Array.from(new Set(jd.split(/[^a-z0-9+]+/).filter(w => w.length > 3)));
     const hits = keywords.filter(k => lo.includes(k)).length;
-    const coverage = keywords.length ? (hits / keywords.length) : 0; // 0..1
+    const coverage = keywords.length ? hits / keywords.length : 0.5; // neutral default if no JD
 
-    const sections = ["summary","experience","education","projects","skills","achievements"];
-    const sectionsPresent = sections.reduce((a,s)=> a + (lo.includes(s) ? 1 : 0), 0);
-    const sectionsRatio = sectionsPresent / sections.length; // 0..1
+    const sections = ["summary", "experience", "education", "projects", "skills", "achievements"];
+    const foundSections = sections.filter(s => lo.includes(s));
+    const sectionsRatio = foundSections.length / sections.length;
 
-    const bullets = (text.match(/\n\s*[-•*]/g) || []).length;  // count
-    const metrics = (text.match(/\b(\d+%|\d+k|\$\d+|\d+\s?(months?|years?))\b/gi) || []).length;
+    const bullets = (text.match(/\n\s*[-•*]/g) || []).length;
+    const metrics = (text.match(/\b(\d+(\.\d+)?\s*%|\$\s*\d+|[0-9][0-9.,]*\s*(k|m|b)\b)/gi) || []).length;
 
     return { coverage, sectionsRatio, bullets, metrics };
 }
 
-function clamp(x, min=0, max=100){ return Math.max(min, Math.min(max, x)); }
-
-export function scoreResume(resumeText = "", jobDescription = "") {
-    const f = extractResumeFeatures(resumeText, jobDescription);
-
-    // If ML model exists, use linear model -> 0..100
-    if (mlModel) {
-        const w = mlModel.weights;
-        const raw =
-            w.intercept +
-            w.coverage * f.coverage +
-            w.sections * f.sectionsRatio +
-            w.bullets  * Math.min(10, f.bullets) +
-            w.metrics  * Math.min(10, f.metrics);
-        const score = clamp(Math.round(raw));
-        return finalize(score, f);
-    }
-
-    // Heuristic fallback (stable and consistent across app)
-    let score = Math.round(
-        55 * f.coverage +      // JD alignment matters most
-        25 * f.sectionsRatio + // structure matters a lot
-        2  * Math.min(10, f.bullets) + // bullet quality
-        2  * Math.min(10, f.metrics)   // metrics/impact
-    );
-    score = clamp(score);
-
-    return finalize(score, f);
-}
-
-function finalize(score, f){
+function finalize(score, f) {
     const suggestions = [];
     if (f.coverage < 0.7) suggestions.push("Add more role-specific keywords from the JD.");
     if (f.sectionsRatio < 0.8) suggestions.push("Ensure Summary, Experience, Education, Projects, Skills, Achievements are present.");
@@ -78,9 +48,29 @@ function finalize(score, f){
     if (f.metrics < 2) suggestions.push("Quantify impact with metrics (%, $, time saved, scale).");
     return {
         score,
-        keywordCoverage: Math.round(f.coverage*100),
+        keywordCoverage: Math.round(f.coverage * 100),
         bullets: f.bullets,
         metrics: f.metrics,
         suggestions
     };
+}
+
+export function scoreResume(resumeText = "", jobDescription = "") {
+    const f = extractResumeFeatures(resumeText, jobDescription);
+
+    if (mlModel) {
+        const w = mlModel.weights;
+        const raw = w.intercept + w.coverage * f.coverage + w.sections * f.sectionsRatio + w.bullets * f.bullets + w.metrics * f.metrics;
+        const score = Math.max(0, Math.min(100, Math.round(raw)));
+        return finalize(score, f);
+    }
+
+    // Heuristic
+    let base = 50;
+    base += Math.round((f.coverage - 0.5) * 40);     // -20..+20
+    base += Math.round((f.sectionsRatio - 0.5) * 20);// -10..+10
+    base += Math.min(10, f.bullets);                 // up to +10
+    base += Math.min(10, f.metrics * 2);             // up to +10
+    const score = Math.max(0, Math.min(100, base));
+    return finalize(score, f);
 }

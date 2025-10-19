@@ -7,10 +7,18 @@ export default function ThemeToggle() {
 
     useEffect(() => {
         setMounted(true);
-        const saved = typeof window !== "undefined" && localStorage.getItem("theme");
-        const isDark = saved ? saved === "dark" : window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-        setDark(isDark);
-        if (isDark) document.documentElement.classList.add("dark");
+        try {
+            const saved = localStorage.getItem("theme");
+            let isDark;
+            if (saved === "dark") isDark = true;
+            else if (saved === "light") isDark = false;
+            else isDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+            setDark(isDark);
+            document.documentElement.classList.toggle("dark", isDark);
+        } catch {
+            // fail-safe: no-op
+        }
     }, []);
 
     if (!mounted) return null;
@@ -18,14 +26,13 @@ export default function ThemeToggle() {
     function toggle() {
         const next = !dark;
         setDark(next);
-        if (next) {
-            document.documentElement.classList.add("dark");
-            localStorage.setItem("theme", "dark");
-        } else {
-            document.documentElement.classList.remove("dark");
-            localStorage.setItem("theme", "light");
-        }
+        document.documentElement.classList.toggle("dark", next);
+        try { localStorage.setItem("theme", next ? "dark" : "light"); } catch {}
     }
 
-    return <button onClick={toggle} className="btn btn-primary">{dark ? "Light" : "Dark"}</button>;
+    return (
+        <button onClick={toggle} className="px-3 py-2 rounded-md border text-sm">
+            {dark ? "Light" : "Dark"}
+        </button>
+    );
 }

@@ -31,7 +31,7 @@ export default function Register() {
             const data = await res.json();
             if (!res.ok) { setError(data.error || "Registration failed"); return; }
 
-            localStorage.setItem(process.env.JWT_STORAGE_KEY, data.token);
+            localStorage.setItem(process.env.NEXT_PUBLIC_JWT_STORAGE_KEY, data.token);
             setAts(data.ats);
             setTimeout(() => { window.location.href = "/dashboard"; }, 1200);
         } catch (err) {
