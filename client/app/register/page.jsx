@@ -1,63 +1,90 @@
 "use client";
+
 import { useState } from "react";
-
-// ... (same helper functions you already have for PDF/DOCX extraction)
-
-import { /* keep your readFileAsArrayBuffer, extractPdfText, extractDocxText, extractResumeText */ } from "./resume_extract_helpers";
-// If you don't have this helper file, keep the inline functions you used earlier.
 
 export default function Register() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [file, setFile] = useState(null);
-    const [jd, setJd] = useState(""); // NEW: allow JD to match the ATS logic
-    const [ats, setAts] = useState(null);
+    const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");
 
     async function submit(e) {
         e.preventDefault();
-        setError(""); setAts(null);
-        if (!file) { setError("Please upload your resume (PDF/DOCX)."); return; }
+        setError("");
+        setBusy(true);
         try {
-            const resumeText = await extractResumeText(file);
-            if (!resumeText || resumeText.length < 20) throw new Error("Could not read resume. Please upload a clear PDF/DOCX.");
-
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register-with-text`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, email, password, resumeText, jobDescription: jd })
+                body: JSON.stringify({ name, email, password }),
             });
-            const data = await res.json();
-            if (!res.ok) { setError(data.error || "Registration failed"); return; }
 
-            localStorage.setItem(process.env.NEXT_PUBLIC_JWT_STORAGE_KEY, data.token);
-            setAts(data.ats);
-            setTimeout(() => { window.location.href = "/dashboard"; }, 1200);
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                setError(data?.error || "Registration failed");
+                return;
+            }
+
+            // Save token and go to dashboard
+            if (data?.token) {
+                localStorage.setItem(process.env.NEXT_PUBLIC_JWT_STORAGE_KEY, data.token);
+            }
+            window.location.href = "/dashboard";
         } catch (err) {
-            setError(err.message || "Failed to parse resume");
+            setError(err.message || "Network error");
+        } finally {
+            setBusy(false);
         }
     }
 
     return (
-        <div className="max-w-lg mx-auto card">
+        <div className="max-w-lg mx-auto p-6 rounded-md border">
             <h1 className="text-2xl font-bold mb-4">Create account</h1>
-            {error && <div className="text-red-600 mb-2">{error}</div>}
+
+            {error && <div className="mb-3 text-red-500 text-sm">{error}</div>}
+
             <form onSubmit={submit} className="space-y-3">
-                <input value={name} onChange={e=>setName(e.target.value)} placeholder="Full name" className="input" />
-                <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" className="input" />
-                <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Password" className="input" />
-                <input type="file" accept=".pdf,.docx,.txt" onChange={e=>setFile(e.target.files?.[0] || null)} className="input" />
-                <textarea value={jd} onChange={e=>setJd(e.target.value)} className="input h-32" placeholder="Optional: paste target job description for aligned ATS score" />
-                <button className="btn btn-primary w-full">Register & Analyze Resume</button>
+                <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Full name"
+                    className="w-full rounded-md border px-3 py-2 bg-transparent"
+                    required
+                />
+                <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email"
+                    className="w-full rounded-md border px-3 py-2 bg-transparent"
+                    required
+                />
+                <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Password"
+                    className="w-full rounded-md border px-3 py-2 bg-transparent"
+                    minLength={6}
+                    required
+                />
+
+                <button
+                    type="submit"
+                    disabled={busy}
+                    className="btn btn-primary w-full disabled:opacity-60"
+                >
+                    {busy ? "Creating account..." : "Register"}
+                </button>
             </form>
-            {ats && (
-                <div className="mt-4">
-                    <div className="text-sm opacity-70">ATS Score</div>
-                    <div className="text-3xl font-extrabold">{ats.score}/100</div>
-                    <div className="text-sm opacity-70">Coverage: {ats.keywordCoverage}% • Bullets: {ats.bullets} • Metrics: {ats.metrics}</div>
-                </div>
-            )}
+
+            <p className="mt-4 text-sm opacity-70">
+                Already have an account?{" "}
+                <a href="/login" className="underline">
+                    Log in
+                </a>
+            </p>
         </div>
     );
 }
