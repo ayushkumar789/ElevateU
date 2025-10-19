@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { track } from "@/lib/track";
+import { track } from "../../../lib/track";
 
 function Mic({ onText }) {
     const [rec, setRec] = useState(null);
