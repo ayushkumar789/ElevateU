@@ -22,8 +22,29 @@ const PORT = process.env.PORT || 8000;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
 const MOBILE_URL = process.env.MOBILE_URL || "http://localhost:19006";
 
+const allowedOrigins = []
+    .concat((process.env.CLIENT_ORIGIN || "").split(","))
+    .concat(process.env.CLIENT_URL || "")
+    .concat(process.env.MOBILE_URL || "")
+    .map(s => s && s.trim())
+    .filter(Boolean);
+
+const corsOptions = {
+    origin(origin, cb) {
+        // allow same-origin / curl / health checks without Origin header
+        if (!origin) return cb(null, true);
+        if (allowedOrigins.includes(origin)) return cb(null, true);
+        return cb(new Error("Not allowed by CORS"));
+    },
+    methods: ["GET","HEAD","PUT","PATCH","POST","DELETE","OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+    optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(helmet());
-app.use(cors({ origin: [CLIENT_URL, MOBILE_URL], credentials: true }));
 app.use(express.json({ limit: "2mb" }));
 app.use(morgan("tiny"));
 
