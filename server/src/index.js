@@ -31,48 +31,23 @@ const allowedOrigins = new Set(
         .filter(Boolean)
 );
 
-/* small helper */
-function setCorsHeaders(req, res) {
-    const origin = req.headers.origin;
-    if (origin && allowedOrigins.has(origin)) {
-        res.setHeader("Access-Control-Allow-Origin", origin);
-        res.setHeader("Vary", "Origin");
-        res.setHeader("Access-Control-Allow-Credentials", "true");
-
-        // reflect requested headers or fall back to typical ones
-        const reqHeaders =
-            req.headers["access-control-request-headers"] || "Content-Type, Authorization";
-        res.setHeader("Access-Control-Allow-Headers", reqHeaders);
-
-        res.setHeader(
-            "Access-Control-Allow-Methods",
-            "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
-        );
-    }
-}
-
-/* 2) ALWAYS-ON CORS SHIM (must be first) */
+// VERY PERMISSIVE CORS (ok for a student project with Bearer tokens)
 app.use((req, res, next) => {
-    setCorsHeaders(req, res);
-    if (req.method === "OPTIONS") {
-        // Short-circuit all preflights so nothing else can throw/500
-        return res.status(204).end();
-    }
+    res.setHeader("Access-Control-Allow-Origin", "*"); // allow all
+    res.setHeader(
+        "Access-Control-Allow-Headers",
+        req.headers["access-control-request-headers"] || "Content-Type, Authorization"
+    );
+    res.setHeader(
+        "Access-Control-Allow-Methods",
+        "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
+    );
+    if (req.method === "OPTIONS") return res.sendStatus(204);
     next();
 });
 
-/* 3) (Optional) keep standard cors() if you like; the shim above guarantees headers on errors */
-app.use(
-    cors({
-        origin(origin, cb) {
-            if (!origin || allowedOrigins.has(origin)) return cb(null, true);
-            return cb(new Error("CORS: origin not allowed"));
-        },
-        credentials: true,
-        allowedHeaders: ["Content-Type", "Authorization"],
-        methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
-    })
-);
+// (optional) you can still keep helmet/cors/json/etc after this
+
 app.use(helmet());
 app.use(express.json({ limit: "2mb" }));
 app.use(morgan("tiny"));
