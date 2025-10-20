@@ -21,19 +21,25 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
 const MOBILE_URL = process.env.MOBILE_URL || "http://localhost:19006";
-
-const allowedOrigins = []
+const allowlist = []
     .concat((process.env.CLIENT_ORIGIN || "").split(","))
     .concat(process.env.CLIENT_URL || "")
     .concat(process.env.MOBILE_URL || "")
     .map(s => s && s.trim())
     .filter(Boolean);
 
+console.log("[CORS] allowlist:", allowlist);
+
 const corsOptions = {
     origin(origin, cb) {
-        // allow same-origin / curl / health checks without Origin header
+        // allow same-origin / server-to-server (no Origin header)
         if (!origin) return cb(null, true);
-        if (allowedOrigins.includes(origin)) return cb(null, true);
+
+        // allow listed origins
+        if (allowlist.includes(origin)) return cb(null, true);
+
+        // DEBUG: log blocked origins
+        console.warn("[CORS] blocked origin:", origin);
         return cb(new Error("Not allowed by CORS"));
     },
     methods: ["GET","HEAD","PUT","PATCH","POST","DELETE","OPTIONS"],
@@ -42,9 +48,10 @@ const corsOptions = {
     optionsSuccessStatus: 204,
 };
 
+
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(express.json({ limit: "2mb" }));
 app.use(morgan("tiny"));
 
