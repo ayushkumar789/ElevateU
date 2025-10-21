@@ -1,9 +1,9 @@
 "use client";
 export default function TeamGrid(){
     const team = [
-        { name:"Member 1", role:"Developer", img:"/team/member1.jpg", linkedin:"https://www.linkedin.com/" },
-        { name:"Member 2", role:"Developer", img:"/team/member2.jpg", linkedin:"https://www.linkedin.com/" },
-        { name:"Member 3", role:"Developer", img:"/team/member3.jpg", linkedin:"https://www.linkedin.com/" },
+        { name:"Varshith Reddy", role:"22EG110B50", img:"/team/member1.jpg", linkedin:"https://www.linkedin.com/in/ramidi-varshith-reddy-8a5661287?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" },
+        { name:"J. Prem", role:"23EG510B04", img:"/team/member2.jpg", linkedin:"https://www.linkedin.com/in/jakka-durga-venkata-prem?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" },
+        { name:"K.Uday Sai", role:"22EG110B30", img:"/team/member3.jpg", linkedin:"https://www.linkedin.com/in/uday-sai-0b26a527a?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" },
     ];
     return (
         <section className="space-y-4">
